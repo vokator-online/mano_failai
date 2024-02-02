@@ -1,0 +1,51 @@
+import sqlite3
+
+conn = sqlite3.connect('parduotuve.db')
+cursor = conn.cursor()
+
+cursor.execute('''
+SELECT product.name, SUM(bill_line.quantity) AS total_sold
+FROM product
+JOIN bill_line ON product.id = bill_line.product_id
+GROUP BY product.id
+ORDER BY total_sold DESC
+LIMIT 1
+''')
+most_sold_product = cursor.fetchone()
+print("Daugiausiai parduodamas produktas:", most_sold_product)
+
+cursor.execute('''
+SELECT product.name, SUM(product.price * bill_line.quantity) AS total_revenue
+FROM product
+JOIN bill_line ON product.id = bill_line.product_id
+GROUP BY product.id
+ORDER BY total_revenue DESC
+LIMIT 1
+''')
+highest_revenue_product = cursor.fetchone()
+print("Didžiausia produkto apyvarta:", highest_revenue_product)
+
+cursor.execute('''
+SELECT customer.first_name, customer.last_name, COUNT(bill.id) AS total_purchases
+FROM customer
+JOIN bill ON customer.id = bill.customer_id
+GROUP BY customer.id
+ORDER BY total_purchases DESC
+LIMIT 1
+''')
+best_customer = cursor.fetchone()
+print("Geriausias klientas:", best_customer)
+
+cursor.execute('''
+SELECT bill.id, SUM(product.price * bill_line.quantity) AS total_bill_amount
+FROM bill
+JOIN bill_line ON bill.id = bill_line.bill_id
+JOIN product ON bill_line.product_id = product.id
+GROUP BY bill.id
+ORDER BY total_bill_amount DESC
+LIMIT 1
+''')
+largest_bill = cursor.fetchone()
+print("Didžiausia sąskaita:", largest_bill)
+
+conn.close()
